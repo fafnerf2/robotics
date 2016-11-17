@@ -1,8 +1,11 @@
 
 package TetrixBot;
 
+import android.os.Debug;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -28,7 +31,7 @@ import com.qualcomm.robotcore.util.Range;
  * back to zero position: Y button
  * -------------------------------------------------------------------------
  */
-@TeleOp(name="Tetrix Arm", group="Robotic Arms")
+@TeleOp(name="Assignment6", group="Robotic Arms")
 public class Assignment6 extends LinearOpMode {
 
     // define the robot hardware:
@@ -38,19 +41,93 @@ public class Assignment6 extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
 
     boolean startButtonPressed = false;
+    int shoulderFirst = -100;
+    int shoulderSecond = -556;
+    int elbowDrop = 2656;
+
+    public void initializeRobot() {
+
+        robot.motorShoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.motorShoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        robot.motorShoulder.setPower(robot.POWER_SHOULDER/2);
+        //pos shoulder power is UP
+
+        while(!robot.sensorShoulder.isPressed()) {
+                //robot.motorShoulder.setPower(-HardwareTetrixBot.POWER_SHOULDER / 2);
+            }
+            robot.motorShoulder.setPower(0);
+            robot.resetShoulderEncoder();
+
+            robot.motorElbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.motorElbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            robot.motorElbow.setPower(-robot.POWER_ELBOW / 2);
+             //neg elbow power is UP
+
+        while(!robot.sensorElbow.isPressed()) {
+            //robot.motorElbow.setPower(HardwareTetrixBot.POWER_ELBOW / 2);
+        }
+            robot.motorElbow.setPower(0);
+            robot.resetElbowEncoder();
+
+
+        robot.motorShoulder.setTargetPosition(robot.INIT_SHOULDER);
+        robot.motorElbow.setTargetPosition(robot.INIT_ELBOW);
+        robot.motorShoulder.setPower(-robot.POWER_SHOULDER/2);
+        robot.motorElbow.setPower(robot.POWER_ELBOW/2);
+    }
+
+    public void dropObject(){
+        while(robot.posGripper != 0.56) {
+            robot.motorShoulder.setTargetPosition(shoulderFirst);
+            robot.motorShoulder.setPower(-robot.POWER_SHOULDER / 2);
+            while( robot.motorShoulder.getCurrentPosition() != -100) {
+            }
+            robot.motorElbow.setTargetPosition(elbowDrop);
+            robot.motorElbow.setPower(-robot.POWER_ELBOW / 2);
+            while(robot.motorElbow.getCurrentPosition() != 2656){
+            }
+
+            robot.posTorso = 0.386;
+            robot.servoTorso.setPosition(robot.posTorso);
+            while(robot.servoTorso.getPosition() != .386) {
+            }
+
+            robot.motorShoulder.setTargetPosition(shoulderSecond);
+            robot.motorShoulder.setPower(-robot.POWER_SHOULDER / 2);
+            while(robot.motorShoulder.getCurrentPosition() != -556){
+            }
+
+
+
+            robot.posGripper = 0.56;
+            robot.servoGripper.setPosition(robot.posGripper);
+            robot.motorShoulder.setPower(0);
+            robot.motorElbow.setPower(0);
+            robot.servoTorso.setPosition(robot.INIT_TORSO);
+        }
+        robot.servoTorso.setPosition(robot.INIT_TORSO);
+        robot.motorElbow.setTargetPosition(robot.INIT_ELBOW);
+        robot.motorShoulder.setTargetPosition(robot.INIT_SHOULDER);
+        robot.motorShoulder.setPower(-robot.POWER_SHOULDER/2);
+        robot.motorElbow.setPower(robot.POWER_ELBOW/2);
+
+
+
+    }
 
     @Override
     public void runOpMode() throws InterruptedException {
 
         // initialize the hardware
         robot.init(hardwareMap);
-        robot.initializeRobot();
+        initializeRobot();
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         //hit limit switch then reset encoder
-       // stopMotors();
+
 
         // Wait for the user to press the PLAY button on the DS:
         waitForStart();
@@ -73,6 +150,13 @@ public class Assignment6 extends LinearOpMode {
                 startButtonPressed = false;
             }
 
+            //------------------------------------------------------------------
+            // autonomous drop block in bucket when press 'A'
+            //------------------------------------------------------------------
+            if(gamepad1.a) {
+              dropObject();
+            }
+
             //----------------------------------------
             // move shoulder up and down
             //----------------------------------------
@@ -81,20 +165,20 @@ public class Assignment6 extends LinearOpMode {
             if (gamepad1.left_trigger > 0.5) {
                 // move shoulder down:
                 robot.posShoulder = currentShoulderPosition
-                        + robot.DELTA_SHOULDER;
+                        + HardwareTetrixBot.DELTA_SHOULDER;
             }
             if (gamepad1.left_bumper) {
                 // move shoulder up:
                 robot.posShoulder = currentShoulderPosition
-                        - robot.DELTA_SHOULDER;
+                        - HardwareTetrixBot.DELTA_SHOULDER;
             }
             if (gamepad1.y) {
-                robot.posShoulder = 0;
-                robot.posTorso = robot.INIT_TORSO;
+                robot.posShoulder = HardwareTetrixBot.INIT_SHOULDER;
+                robot.posTorso = HardwareTetrixBot.INIT_TORSO;
             }
 
             robot.motorShoulder.setTargetPosition(robot.posShoulder);
-            robot.motorShoulder.setPower(robot.POWER_SHOULDER);
+            robot.motorShoulder.setPower(HardwareTetrixBot.POWER_SHOULDER);
             telemetry.addData("shoulder target", String.format("%d", robot.posShoulder));
 
             //----------------------------------------
@@ -106,16 +190,16 @@ public class Assignment6 extends LinearOpMode {
             if (gamepad1.right_bumper) {
                 //move elbow down
                 robot.posElbow = currentElbowPosition
-                        + robot.DELTA_ELBOW;
+                        + HardwareTetrixBot.DELTA_ELBOW;
             }
             if (gamepad1.right_trigger > 0.5) {
                 //move elbow up
                 robot.posElbow = currentElbowPosition
-                        - robot.DELTA_ELBOW;
+                        - HardwareTetrixBot.DELTA_ELBOW;
             }
 
             robot.motorElbow.setTargetPosition(robot.posElbow);
-            robot.motorElbow.setPower(robot.POWER_ELBOW);
+            robot.motorElbow.setPower(HardwareTetrixBot.POWER_ELBOW);
             telemetry.addData("Elbow target", String.format("%d", robot.posElbow));
 
             //----------------------------------------
@@ -123,13 +207,13 @@ public class Assignment6 extends LinearOpMode {
             //----------------------------------------
             if (gamepad1.x) {
                 // move left, CCW
-                robot.posTorso = Range.clip(robot.posTorso + robot.DELTA_TORSO,
-                        robot.MIN_TORSO, robot.MAX_TORSO);
+                robot.posTorso = Range.clip(robot.posTorso + HardwareTetrixBot.DELTA_TORSO,
+                        HardwareTetrixBot.MIN_TORSO, HardwareTetrixBot.MAX_TORSO);
             }
             if (gamepad1.b) {
                 // move right, CC
-                robot.posTorso = Range.clip(robot.posTorso - robot.DELTA_TORSO,
-                        robot.MIN_TORSO, robot.MAX_TORSO);
+                robot.posTorso = Range.clip(robot.posTorso - HardwareTetrixBot.DELTA_TORSO,
+                        HardwareTetrixBot.MIN_TORSO, HardwareTetrixBot.MAX_TORSO);
             }
             robot.servoTorso.setPosition(robot.posTorso);
             telemetry.addData("torso", String.format("%.4f", robot.posTorso));
@@ -139,13 +223,13 @@ public class Assignment6 extends LinearOpMode {
             //----------------------------------------
             if (gamepad1.dpad_left) {
                 //move left, CC
-                robot.posTilt = Range.clip(robot.posTilt + robot.DELTA_TILT,
-                        robot.MIN_TILT, robot.MAX_TILT);
+                robot.posTilt = Range.clip(robot.posTilt + HardwareTetrixBot.DELTA_TILT,
+                        HardwareTetrixBot.MIN_TILT, HardwareTetrixBot.MAX_TILT);
             }
             if (gamepad1.dpad_right) {
                 //move right CCW
-                robot.posTilt = Range.clip(robot.posTilt - robot.DELTA_TILT,
-                        robot.MIN_TILT, robot.MAX_TILT);
+                robot.posTilt = Range.clip(robot.posTilt - HardwareTetrixBot.DELTA_TILT,
+                        HardwareTetrixBot.MIN_TILT, HardwareTetrixBot.MAX_TILT);
             }
 
             robot.servoTilt.setPosition(robot.posTilt);
@@ -156,13 +240,13 @@ public class Assignment6 extends LinearOpMode {
             //----------------------------------------
             if (gamepad1.dpad_up) {
                 //move up, CC
-                robot.posTurn = Range.clip(robot.posTurn + robot.DELTA_TURN,
-                        robot.MIN_TURN, robot.MAX_TURN);
+                robot.posTurn = Range.clip(robot.posTurn + HardwareTetrixBot.DELTA_TURN,
+                        HardwareTetrixBot.MIN_TURN, HardwareTetrixBot.MAX_TURN);
             }
             if (gamepad1.dpad_down) {
                 //move down, CC
-                robot.posTurn = Range.clip(robot.posTurn - robot.DELTA_TURN,
-                        robot.MIN_TURN, robot.MAX_TURN);
+                robot.posTurn = Range.clip(robot.posTurn - HardwareTetrixBot.DELTA_TURN,
+                        HardwareTetrixBot.MIN_TURN, HardwareTetrixBot.MAX_TURN);
             }
             robot.servoTurn.setPosition(robot.posTurn);
             telemetry.addData("turn", String.format("%.4f", robot.posTurn));
@@ -172,26 +256,32 @@ public class Assignment6 extends LinearOpMode {
             //----------------------------------------
             if (gamepad1.left_stick_x > 0) {
                 //move open, CC
-                robot.posGripper = Range.clip(robot.posGripper + robot.DELTA_GRIPPER,
-                        robot.MIN_GRIPPER, robot.MAX_GRIPPER);
+                robot.posGripper = Range.clip(robot.posGripper + HardwareTetrixBot.DELTA_GRIPPER,
+                        HardwareTetrixBot.MIN_GRIPPER, HardwareTetrixBot.MAX_GRIPPER);
             }
             if (gamepad1.left_stick_x < 0) {
                 //move close, CC
-                robot.posGripper = Range.clip(robot.posGripper - robot.DELTA_GRIPPER,
-                        robot.MIN_GRIPPER, robot.MAX_GRIPPER);
+                robot.posGripper = Range.clip(robot.posGripper - HardwareTetrixBot.DELTA_GRIPPER,
+                        HardwareTetrixBot.MIN_GRIPPER, HardwareTetrixBot.MAX_GRIPPER);
             }
             robot.servoGripper.setPosition(robot.posGripper);
             telemetry.addData("Gripper", String.format("%.4f", robot.posGripper));
 
             //----------------------------------------
-            // stop motors it touch limit switch
+            // stop motors if touch limit switch
             //----------------------------------------
             if(robot.sensorElbow.isPressed()) {
-                robot.motorElbow.setPower(0);
+                robot.motorElbow.setPower(robot.STOP);
+                robot.resetElbowEncoder();
+
             }
             if(robot.sensorShoulder.isPressed()) {
-                robot.motorShoulder.setPower(0);
+                robot.motorShoulder.setPower(robot.STOP);
+                robot.resetShoulderEncoder();
+
+
             }
+
 
             //--------------------------------------------
             // housekeeping at the end of the main loop
@@ -203,17 +293,8 @@ public class Assignment6 extends LinearOpMode {
             robot.waitForTick(50);
         }
     }
-    public void stopMotors(String s){
-        if(s.equals("sensorShoulder")){
-            robot.motorShoulder.setPower(0);
-        } else if (s.equals("sensorElbow")){
-            robot.motorElbow.setPower(0);
-        } else{
-            robot.motorShoulder.setPower(0);
-            robot.motorElbow.setPower(0);
-        }
+
+
 
     }
 
-
-}

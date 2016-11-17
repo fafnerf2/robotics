@@ -34,14 +34,14 @@ public class HardwareTetrixBot
     final static int DELTA_SHOULDER = 40;
     final static int MIN_SHOULDER   = 0;
     final static int MAX_SHOULDER   = 0;
-    final static int INIT_SHOULDER  = 200;
+    final static int INIT_SHOULDER  = -242;
     int posShoulder = INIT_SHOULDER;
     final static double POWER_SHOULDER = 0.2;
 
     final static int DELTA_ELBOW = 40;
     final static int MIN_ELBOW   = 0;
     final static int MAX_ELBOW   = 0;
-    final static int INIT_ELBOW  = 200;
+    final static int INIT_ELBOW  = 4111;
     int posElbow = INIT_ELBOW;
     final static double POWER_ELBOW = 0.2;
 
@@ -60,7 +60,7 @@ public class HardwareTetrixBot
     final static double DELTA_TORSO = 0.01;
     final static double MIN_TORSO   = 0.170;
     final static double MAX_TORSO   = 0.562;
-    final static double INIT_TORSO  = 0.4260;
+    final static double INIT_TORSO  = 0.486;
     double posTorso = INIT_TORSO;
 
     Servo servoTilt;
@@ -69,7 +69,7 @@ public class HardwareTetrixBot
     final static double DELTA_TILT = 0.01;
     final static double MIN_TILT = -0.562;
     final static double MAX_TILT = 0.562;
-    final static double INIT_TILT = 0.426;
+    final static double INIT_TILT = -0.114;
     double posTilt = INIT_TILT;
 
     Servo servoTurn;
@@ -79,7 +79,7 @@ public class HardwareTetrixBot
     final static double DELTA_TURN = 0.01;
     final static double MIN_TURN    = 0.05;
     final static double MAX_TURN    = 0.4100;
-    final static double INIT_TURN   = 0.4260;
+    final static double INIT_TURN   = 0.050;
     double posTurn = INIT_TURN;
 
     Servo servoGripper;
@@ -88,7 +88,7 @@ public class HardwareTetrixBot
     final static double DELTA_GRIPPER = 0.01;
     final static double MIN_GRIPPER   = 0;
     final static double MAX_GRIPPER    = 0.562;
-    final static double INIT_GRIPPER   = 0.4260;
+    final static double INIT_GRIPPER   = 0.3760;
     double posGripper = INIT_GRIPPER;
 
     //touch sensor elbow and shoulder
@@ -182,7 +182,5 @@ public class HardwareTetrixBot
         // Reset the cycle clock for the next pass.
         period.reset();
     }
-    public void initializeRobot() {
 
-    }
     }
