@@ -23,8 +23,14 @@ import com.qualcomm.robotcore.util.Range;
  * -------------------------------------------------------------------------
  * Gamepad 1 controls:
  *
- * torso:    X button moves left (CCW), B button right (CW)
- * shoulder: left trigger and left bumper
+ * torso:  X button moves left (CCW), B button right (CW)
+ * tilt:  dpad left and dpad right
+ * turn:  dpad up and dpad down
+ * gripper:  left and right on left stick
+ * shoulder:  left trigger and left bumper
+ * elbow:  right trigger and right bumper
+ * a:  dropObject
+ *
  *
  * other:
  * reset arm encoders: Start button
@@ -43,9 +49,12 @@ public class Assignment6 extends LinearOpMode {
     boolean startButtonPressed = false;
     int shoulderFirst = -100;
     int shoulderSecond = -556;
-    int elbowDrop = 2656;
+    int elbowDrop = 1656;
+    int currentShoulderPosition;
+    int currentElbowPosition;
 
-    public void initializeRobot() {
+    //calibrates robot arm and resets encoders then returns to initial position
+    public void initializeRobot() throws InterruptedException{
 
         robot.motorShoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         robot.motorShoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -53,6 +62,7 @@ public class Assignment6 extends LinearOpMode {
         //pos shoulder power is UP
 
         while(!robot.sensorShoulder.isPressed()) {
+            idle();
                 //robot.motorShoulder.setPower(-HardwareTetrixBot.POWER_SHOULDER / 2);
             }
             robot.motorShoulder.setPower(0);
@@ -65,55 +75,61 @@ public class Assignment6 extends LinearOpMode {
              //neg elbow power is UP
 
         while(!robot.sensorElbow.isPressed()) {
+            idle();
             //robot.motorElbow.setPower(HardwareTetrixBot.POWER_ELBOW / 2);
         }
             robot.motorElbow.setPower(0);
             robot.resetElbowEncoder();
 
 
-        robot.motorShoulder.setTargetPosition(robot.INIT_SHOULDER);
         robot.motorElbow.setTargetPosition(robot.INIT_ELBOW);
-        robot.motorShoulder.setPower(-robot.POWER_SHOULDER/2);
         robot.motorElbow.setPower(robot.POWER_ELBOW/2);
+        while(robot.motorElbow.getCurrentPosition() < robot.INIT_ELBOW){
+            idle();
+        }
+        robot.motorElbow.setPower(0);
+
+        robot.motorShoulder.setTargetPosition(robot.INIT_SHOULDER);
+        robot.motorShoulder.setPower(-robot.POWER_SHOULDER/2);
+
     }
 
-    public void dropObject(){
-        while(robot.posGripper != 0.56) {
+    //moves picked up object to basket
+    public void dropObject() throws InterruptedException{
             robot.motorShoulder.setTargetPosition(shoulderFirst);
             robot.motorShoulder.setPower(-robot.POWER_SHOULDER / 2);
-            while( robot.motorShoulder.getCurrentPosition() != -100) {
+            while( robot.motorShoulder.getCurrentPosition() < shoulderFirst) {
+                idle();
             }
+            robot.motorShoulder.setPower(0);
             robot.motorElbow.setTargetPosition(elbowDrop);
             robot.motorElbow.setPower(-robot.POWER_ELBOW / 2);
-            while(robot.motorElbow.getCurrentPosition() != 2656){
+            while(robot.motorElbow.getCurrentPosition() > elbowDrop){
+                idle();
             }
-
+            robot.motorElbow.setPower(0);
             robot.posTorso = 0.386;
             robot.servoTorso.setPosition(robot.posTorso);
-            while(robot.servoTorso.getPosition() != .386) {
+            while(robot.servoTorso.getPosition() > .386) {
+                idle();
             }
 
             robot.motorShoulder.setTargetPosition(shoulderSecond);
             robot.motorShoulder.setPower(-robot.POWER_SHOULDER / 2);
-            while(robot.motorShoulder.getCurrentPosition() != -556){
+            while(robot.motorShoulder.getCurrentPosition() > shoulderSecond){
+                idle();
             }
-
-
+            robot.motorShoulder.setPower(0);
 
             robot.posGripper = 0.56;
             robot.servoGripper.setPosition(robot.posGripper);
-            robot.motorShoulder.setPower(0);
-            robot.motorElbow.setPower(0);
             robot.servoTorso.setPosition(robot.INIT_TORSO);
-        }
-        robot.servoTorso.setPosition(robot.INIT_TORSO);
-        robot.motorElbow.setTargetPosition(robot.INIT_ELBOW);
-        robot.motorShoulder.setTargetPosition(robot.INIT_SHOULDER);
-        robot.motorShoulder.setPower(-robot.POWER_SHOULDER/2);
-        robot.motorElbow.setPower(robot.POWER_ELBOW/2);
 
+            currentShoulderPosition = robot.motorShoulder.getCurrentPosition();
+            currentElbowPosition = robot.motorElbow.getCurrentPosition();
 
-
+            robot.posShoulder = robot.motorShoulder.getCurrentPosition();
+            robot.posElbow = robot.motorElbow.getCurrentPosition();
     }
 
     @Override
@@ -122,6 +138,9 @@ public class Assignment6 extends LinearOpMode {
         // initialize the hardware
         robot.init(hardwareMap);
         initializeRobot();
+        while(runtime.milliseconds()<=15000) {
+            idle();
+        }
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -160,7 +179,7 @@ public class Assignment6 extends LinearOpMode {
             //----------------------------------------
             // move shoulder up and down
             //----------------------------------------
-            int currentShoulderPosition = robot.motorShoulder.getCurrentPosition();
+            currentShoulderPosition = robot.motorShoulder.getCurrentPosition();
 
             if (gamepad1.left_trigger > 0.5) {
                 // move shoulder down:
@@ -185,7 +204,7 @@ public class Assignment6 extends LinearOpMode {
             // move elbow left and right:
             //----------------------------------------
 
-            int currentElbowPosition = robot.motorElbow.getCurrentPosition();
+            currentElbowPosition = robot.motorElbow.getCurrentPosition();
 
             if (gamepad1.right_bumper) {
                 //move elbow down

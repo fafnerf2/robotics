@@ -41,7 +41,7 @@ public class HardwareTetrixBot
     final static int DELTA_ELBOW = 40;
     final static int MIN_ELBOW   = 0;
     final static int MAX_ELBOW   = 0;
-    final static int INIT_ELBOW  = 4111;
+    final static int INIT_ELBOW  = 3200;
     int posElbow = INIT_ELBOW;
     final static double POWER_ELBOW = 0.2;
 
