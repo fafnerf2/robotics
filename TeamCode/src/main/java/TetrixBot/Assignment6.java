@@ -1,7 +1,6 @@
 
 package TetrixBot;
 
-import android.os.Debug;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -63,7 +62,6 @@ public class Assignment6 extends LinearOpMode {
 
         while(!robot.sensorShoulder.isPressed()) {
             idle();
-                //robot.motorShoulder.setPower(-HardwareTetrixBot.POWER_SHOULDER / 2);
             }
             robot.motorShoulder.setPower(0);
             robot.resetShoulderEncoder();
@@ -76,7 +74,6 @@ public class Assignment6 extends LinearOpMode {
 
         while(!robot.sensorElbow.isPressed()) {
             idle();
-            //robot.motorElbow.setPower(HardwareTetrixBot.POWER_ELBOW / 2);
         }
             robot.motorElbow.setPower(0);
             robot.resetElbowEncoder();
